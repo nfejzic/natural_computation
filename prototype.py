@@ -1,28 +1,10 @@
+import matplotlib.pyplot as plt
+import numpy as np
 import tensorflow as tf
 from tensorflow.keras.datasets import mnist
+from tensorflow.keras.layers import Conv2D, Dense, Flatten, MaxPooling2D
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense
-import numpy as np
-import matplotlib.pyplot as plt
-
-# Datensatz - links trainingset - rechts das testset mit underscore, da es nicht gebraucht wird und nicht
-# verwendet wird im folgenden...
-(images, labels), (_, _) = mnist.load_data()
-
-# Normalisierung
-images = images.astype("float32") / 255.0
-images = np.expand_dims(images, axis=-1)
-
-print(f"Shape of images: {images.shape}")
-print(f"Shape of labels: {labels.shape}")
-
-# Das hier auskommentieren, um Beispiele der Bilder zu sehen...bedenke labels und images sollten
-# den gleichen index haben, damit sie zusammenpassen...
-# image = images[50000]
-# label = labels[50000]
-# plt.imshow(image.squeeze(), cmap='gray')
-# plt.title(f"Label: {label}")
-# plt.show()
+import argparse
 
 
 ######################### MODEL ##################################
@@ -145,90 +127,121 @@ def evaluate_initialization(model, images, labels, initialization_fn):
     return accuracy, mean_difference
 
 
-xavier_acc, xavier_diff = ([], [])
-he_acc, he_diff = ([], [])
-rand_norm_acc, rand_norm_diff = ([], [])
-pos_neg_acc, pos_neg_diff = ([], [])
+def run_tests(runs: int):
+    # Datensatz - links trainingset - rechts das testset mit underscore, da es nicht gebraucht wird und nicht
+    # verwendet wird im folgenden...
+    (images, labels), (_, _) = mnist.load_data()
 
-for i in range(5):
-    # Um das erzeugte Model zu sehen (also ein print davon), die model.summary() zeile auskommentieren...
-    print("Testing Xavier Initialization")
-    model = create_model()
-    # model.summary()
-    accuracy_xavier, mean_diff_xavier = evaluate_initialization(
-        model, images, labels, initialize_weights_xavier
-    )
-    xavier_acc.append(accuracy_xavier)
-    xavier_diff.append(mean_diff_xavier)
+    # Normalisierung
+    images = images.astype("float32") / 255.0
+    images = np.expand_dims(images, axis=-1)
+
+    print(f"Shape of images: {images.shape}")
+    print(f"Shape of labels: {labels.shape}")
+
+    # Das hier auskommentieren, um Beispiele der Bilder zu sehen...bedenke labels und images sollten
+    # den gleichen index haben, damit sie zusammenpassen...
+    # image = images[50000]
+    # label = labels[50000]
+    # plt.imshow(image.squeeze(), cmap='gray')
+    # plt.title(f"Label: {label}")
+    # plt.show()
+
+    xavier_acc, xavier_diff = ([], [])
+    he_acc, he_diff = ([], [])
+    rand_norm_acc, rand_norm_diff = ([], [])
+    pos_neg_acc, pos_neg_diff = ([], [])
+
+    for _ in range(runs):
+        # Um das erzeugte Model zu sehen (also ein print davon), die model.summary() zeile auskommentieren...
+        print("Testing Xavier Initialization")
+        model = create_model()
+        # model.summary()
+        accuracy_xavier, mean_diff_xavier = evaluate_initialization(
+            model, images, labels, initialize_weights_xavier
+        )
+        xavier_acc.append(accuracy_xavier)
+        xavier_diff.append(mean_diff_xavier)
+        print(
+            "###########################################################################\n"
+        )
+
+        print("\nTesting He Initialization")
+        model = create_model()
+        # model.summary()
+        accuracy_he, mean_diff_he = evaluate_initialization(
+            model, images, labels, initialize_weights_he
+        )
+        he_acc.append(accuracy_he)
+        he_diff.append(mean_diff_he)
+        print(
+            "###########################################################################\n"
+        )
+
+        print("\nTesting Random Normal Initialization")
+        model = create_model()
+        # model.summary()
+        accuracy_random_normal, mean_diff_random_normal = evaluate_initialization(
+            model, images, labels, initialize_weights_random_normal
+        )
+        rand_norm_acc.append(accuracy_random_normal)
+        rand_norm_diff.append(mean_diff_random_normal)
+        print(
+            "###########################################################################\n"
+        )
+
+        print("Testing Alternating Positive/Negative Initialization")
+        model = create_model()
+        # model.summary()
+        accuracy_alternating, mean_diff_alternating = evaluate_initialization(
+            model, images, labels, initialize_weights_alternating
+        )
+        pos_neg_acc.append(accuracy_alternating)
+        pos_neg_diff.append(mean_diff_alternating)
+        print(
+            "###########################################################################\n"
+        )
+
+    print("\nXavier:")
     print(
-        "###########################################################################\n"
+        f"\tAccurracy: std = {np.std(xavier_acc):.8f}; mean = {np.mean(xavier_acc):.8f}; median = {np.median(xavier_acc):.8f}"
     )
-
-    print("\nTesting He Initialization")
-    model = create_model()
-    # model.summary()
-    accuracy_he, mean_diff_he = evaluate_initialization(
-        model, images, labels, initialize_weights_he
-    )
-    he_acc.append(accuracy_he)
-    he_diff.append(mean_diff_he)
     print(
-        "###########################################################################\n"
+        f"\tMean Difference: std = {np.std(xavier_diff):.8f}; mean = {np.mean(xavier_diff):.8f}; median = {np.median(xavier_diff):.8f}"
     )
 
-    print("\nTesting Random Normal Initialization")
-    model = create_model()
-    # model.summary()
-    accuracy_random_normal, mean_diff_random_normal = evaluate_initialization(
-        model, images, labels, initialize_weights_random_normal
-    )
-    rand_norm_acc.append(accuracy_random_normal)
-    rand_norm_diff.append(mean_diff_random_normal)
+    print("\n\nHe:")
     print(
-        "###########################################################################\n"
+        f"\tAccurracy: std = {np.std(he_acc):.8f}; mean = {np.mean(he_acc):.8f}; median = {np.median(he_acc):.8f}"
     )
-
-    print("Testing Alternating Positive/Negative Initialization")
-    model = create_model()
-    # model.summary()
-    accuracy_alternating, mean_diff_alternating = evaluate_initialization(
-        model, images, labels, initialize_weights_alternating
-    )
-    pos_neg_acc.append(accuracy_alternating)
-    pos_neg_diff.append(mean_diff_alternating)
     print(
-        "###########################################################################\n"
+        f"\tMean Difference: std = {np.std(he_diff):.8f}; mean = {np.mean(he_diff):.8f}; median = {np.median(he_diff):.8f}"
+    )
+
+    print("\n\nRandom Normal:")
+    print(
+        f"\tAccurracy: std = {np.std(rand_norm_acc):.8f}; mean = {np.mean(rand_norm_acc):.8f}; median = {np.median(rand_norm_acc):.8f}"
+    )
+    print(
+        f"\tMean Difference: std = {np.std(rand_norm_diff):.8f}; mean = {np.mean(rand_norm_diff):.8f}; median = {np.median(rand_norm_diff):.8f}"
+    )
+
+    print("\n\nAlternating positive negative:")
+    print(
+        f"\tAccurracy: std = {np.std(pos_neg_acc):.8f}; mean = {np.mean(pos_neg_acc):.8f}; median = {np.median(pos_neg_acc):.8f}"
+    )
+    print(
+        f"\tMean Difference: std = {np.std(pos_neg_diff):.8f}; mean = {np.mean(pos_neg_diff):.8f}; median = {np.median(pos_neg_diff):.8f}"
     )
 
 
-print("Xavier:")
-print(
-    f"\tAccurracy: std = {np.std(xavier_acc):.8f}; mean = {np.mean(xavier_acc):.8f}; median = {np.median(xavier_acc):.8f}"
-)
-print(
-    f"\tMean Difference: std = {np.std(xavier_diff):.8f}; mean = {np.mean(xavier_diff):.8f}; median = {np.median(xavier_diff):.8f}"
-)
+if __name__ == "__main__":
+    # have an argument for number of runs:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--runs", type=int, default=5, help="Number of runs to test the models"
+    )
 
-print("\nHe:")
-print(
-    f"\tAccurracy: std = {np.std(he_acc):.8f}; mean = {np.mean(he_acc):.8f}; median = {np.median(he_acc):.8f}"
-)
-print(
-    f"\tMean Difference: std = {np.std(he_diff):.8f}; mean = {np.mean(he_diff):.8f}; median = {np.median(he_diff):.8f}"
-)
+    args = parser.parse_args()
 
-print("\nRandom Normal:")
-print(
-    f"\tAccurracy: std = {np.std(rand_norm_acc):.8f}; mean = {np.mean(rand_norm_acc):.8f}; median = {np.median(rand_norm_acc):.8f}"
-)
-print(
-    f"\tMean Difference: std = {np.std(rand_norm_diff):.8f}; mean = {np.mean(rand_norm_diff):.8f}; median = {np.median(rand_norm_diff):.8f}"
-)
-
-print("\nAlternating positive negative:")
-print(
-    f"\tAccurracy: std = {np.std(pos_neg_acc):.8f}; mean = {np.mean(pos_neg_acc):.8f}; median = {np.median(pos_neg_acc):.8f}"
-)
-print(
-    f"\tMean Difference: std = {np.std(pos_neg_diff):.8f}; mean = {np.mean(pos_neg_diff):.8f}; median = {np.median(pos_neg_diff):.8f}"
-)
+    run_tests(args.runs)
