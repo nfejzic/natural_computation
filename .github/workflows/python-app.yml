@@ -9,6 +9,11 @@ on:
   pull_request:
     branches: [ "main" ]
   workflow_dispatch:
+    inputs:
+      numOfRuns: 
+        required: false
+        type: number
+        default: 30
 
 
 permissions:
@@ -36,6 +41,11 @@ jobs:
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-    - name: Run the app
+    - name: Run the app (On Workflow Dispatch)
       run: |
-        python prototype.py
+        python prototype.py --runs ${{ github.event.inputs.numOfRuns }}
+      if: ${{ github.event_name == 'workflow_dispatch' }}
+    - name: Run the app (On Push)
+      run: |
+        python prototype.py --runs 50
+      if: ${{ github.event.name != 'workflow_dispatch' }}
