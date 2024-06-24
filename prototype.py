@@ -1,3 +1,4 @@
+import multiprocessing
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
@@ -7,14 +8,32 @@ from tensorflow.keras.models import Sequential
 import argparse
 
 
+def get_activation_fn(name: str):
+    match name:
+        case "relu":
+            return tf.nn.relu, "relu"
+        case "silu":
+            return tf.nn.silu, "silu"
+        case "swish":
+            return tf.nn.silu, "silu"
+        case "sigmoid":
+            return tf.nn.sigmoid, "sigmoid"
+        case "tanh":
+            return tf.nn.tanh, "tanh"
+        case _:
+            raise ValueError(f"Unknown activation function: {name}")
+
+
 ######################### MODEL ##################################
-def create_model():
+def create_model(activation="relu"):
+    nn_act, act = get_activation_fn(activation)
+
     model = Sequential(
         [
             # Convo Layers damits a CNN is...
-            Conv2D(32, kernel_size=(3, 3), activation="relu", input_shape=(28, 28, 1)),
+            Conv2D(32, kernel_size=(3, 3), activation=act, input_shape=(28, 28, 1)),
             MaxPooling2D(pool_size=(2, 2)),
-            Conv2D(64, kernel_size=(3, 3), activation="relu"),
+            Conv2D(64, kernel_size=(3, 3), activation=act),
             MaxPooling2D(pool_size=(2, 2)),
             # Erzeugung 1-Dim Array - Schichten erfordert 1-Dim Eingabe
             Flatten(input_shape=(28, 28)),
@@ -25,9 +44,9 @@ def create_model():
                 activation=tf.nn.silu,
                 kernel_initializer=tf.keras.initializers.GlorotUniform(),
             ),
-            Dense(32, activation=tf.nn.relu),
-            Dense(32, activation=tf.nn.silu),
-            Dense(32, activation=tf.nn.relu),
+            Dense(32, activation=nn_act),
+            Dense(32, activation=nn_act),
+            Dense(32, activation=nn_act),
             # Softmax -> Summe der Outputs erzeugt 1. Es sind 10 Outputs, da 10 Ziffern im Dataset...
             Dense(10, activation="softmax"),
         ]
@@ -127,6 +146,100 @@ def evaluate_initialization(model, images, labels, initialization_fn):
     return accuracy, mean_difference
 
 
+def evaluate_with_activation(images, labels, runs=5, activation="relu"):
+    xavier_acc, xavier_diff = ([], [])
+    he_acc, he_diff = ([], [])
+    rand_norm_acc, rand_norm_diff = ([], [])
+    pos_neg_acc, pos_neg_diff = ([], [])
+
+    for _ in range(runs):
+        # Um das erzeugte Model zu sehen (also ein print davon), die model.summary() zeile auskommentieren...
+        print("Testing Xavier Initialization")
+        model = create_model(activation)
+        # model.summary()
+        accuracy_xavier, mean_diff_xavier = evaluate_initialization(
+            model, images, labels, initialize_weights_xavier
+        )
+        xavier_acc.append(accuracy_xavier)
+        xavier_diff.append(mean_diff_xavier)
+        print(
+            "###########################################################################\n"
+        )
+
+        print("\nTesting He Initialization")
+        model = create_model(activation)
+        # model.summary()
+        accuracy_he, mean_diff_he = evaluate_initialization(
+            model, images, labels, initialize_weights_he
+        )
+        he_acc.append(accuracy_he)
+        he_diff.append(mean_diff_he)
+        print(
+            "###########################################################################\n"
+        )
+
+        print("\nTesting Random Normal Initialization")
+        model = create_model(activation)
+        # model.summary()
+        accuracy_random_normal, mean_diff_random_normal = evaluate_initialization(
+            model, images, labels, initialize_weights_random_normal
+        )
+        rand_norm_acc.append(accuracy_random_normal)
+        rand_norm_diff.append(mean_diff_random_normal)
+        print(
+            "###########################################################################\n"
+        )
+
+        print("Testing Alternating Positive/Negative Initialization")
+        model = create_model(activation)
+        # model.summary()
+        accuracy_alternating, mean_diff_alternating = evaluate_initialization(
+            model, images, labels, initialize_weights_alternating
+        )
+        pos_neg_acc.append(accuracy_alternating)
+        pos_neg_diff.append(mean_diff_alternating)
+        print(
+            "###########################################################################\n"
+        )
+
+    output = ""
+
+    output += format(f"\nWith '{activation}' activation function:\n")
+    output += format("Xavier:\n")
+    output += format(
+        f"\tAccurracy: std = {np.std(xavier_acc):.8f}; mean = {np.mean(xavier_acc):.8f}; median = {np.median(xavier_acc):.8f}\n"
+    )
+    output += format(
+        f"\tMean Difference: std = {np.std(xavier_diff):.8f}; mean = {np.mean(xavier_diff):.8f}; median = {np.median(xavier_diff):.8f}\n"
+    )
+
+    output += format("\n\nHe:\n")
+    output += format(
+        f"\tAccurracy: std = {np.std(he_acc):.8f}; mean = {np.mean(he_acc):.8f}; median = {np.median(he_acc):.8f}\n"
+    )
+    output += format(
+        f"\tMean Difference: std = {np.std(he_diff):.8f}; mean = {np.mean(he_diff):.8f}; median = {np.median(he_diff):.8f}\n"
+    )
+
+    output += format("\n\nRandom Normal:\n")
+    output += format(
+        f"\tAccurracy: std = {np.std(rand_norm_acc):.8f}; mean = {np.mean(rand_norm_acc):.8f}; median = {np.median(rand_norm_acc):.8f}\n"
+    )
+    output += format(
+        f"\tMean Difference: std = {np.std(rand_norm_diff):.8f}; mean = {np.mean(rand_norm_diff):.8f}; median = {np.median(rand_norm_diff):.8f}\n"
+    )
+
+    output += format("\n\nAlternating positive negative:\n")
+    output += format(
+        f"\tAccurracy: std = {np.std(pos_neg_acc):.8f}; mean = {np.mean(pos_neg_acc):.8f}; median = {np.median(pos_neg_acc):.8f}\n"
+    )
+    output += format(
+        f"\tMean Difference: std = {np.std(pos_neg_diff):.8f}; mean = {np.mean(pos_neg_diff):.8f}; median = {np.median(pos_neg_diff):.8f}\n"
+    )
+
+    return output
+
+
 def run_tests(runs: int):
     # Datensatz - links trainingset - rechts das testset mit underscore, da es nicht gebraucht wird und nicht
     # verwendet wird im folgenden...
@@ -147,92 +260,22 @@ def run_tests(runs: int):
     # plt.title(f"Label: {label}")
     # plt.show()
 
-    xavier_acc, xavier_diff = ([], [])
-    he_acc, he_diff = ([], [])
-    rand_norm_acc, rand_norm_diff = ([], [])
-    pos_neg_acc, pos_neg_diff = ([], [])
+    activations = ["swish", "relu", "sigmoid", "tanh"]
 
-    for _ in range(runs):
-        # Um das erzeugte Model zu sehen (also ein print davon), die model.summary() zeile auskommentieren...
-        print("Testing Xavier Initialization")
-        model = create_model()
-        # model.summary()
-        accuracy_xavier, mean_diff_xavier = evaluate_initialization(
-            model, images, labels, initialize_weights_xavier
-        )
-        xavier_acc.append(accuracy_xavier)
-        xavier_diff.append(mean_diff_xavier)
-        print(
-            "###########################################################################\n"
-        )
+    outputs = []
 
-        print("\nTesting He Initialization")
-        model = create_model()
-        # model.summary()
-        accuracy_he, mean_diff_he = evaluate_initialization(
-            model, images, labels, initialize_weights_he
-        )
-        he_acc.append(accuracy_he)
-        he_diff.append(mean_diff_he)
-        print(
-            "###########################################################################\n"
-        )
+    with multiprocessing.Pool(multiprocessing.cpu_count()) as pool:
+        for activation in activations:
+            pool.apply_async(
+                evaluate_with_activation,
+                args=(images, labels, runs, activation),
+                callback=lambda x: outputs.append(x),
+            )
+        pool.close()
+        pool.join()
 
-        print("\nTesting Random Normal Initialization")
-        model = create_model()
-        # model.summary()
-        accuracy_random_normal, mean_diff_random_normal = evaluate_initialization(
-            model, images, labels, initialize_weights_random_normal
-        )
-        rand_norm_acc.append(accuracy_random_normal)
-        rand_norm_diff.append(mean_diff_random_normal)
-        print(
-            "###########################################################################\n"
-        )
-
-        print("Testing Alternating Positive/Negative Initialization")
-        model = create_model()
-        # model.summary()
-        accuracy_alternating, mean_diff_alternating = evaluate_initialization(
-            model, images, labels, initialize_weights_alternating
-        )
-        pos_neg_acc.append(accuracy_alternating)
-        pos_neg_diff.append(mean_diff_alternating)
-        print(
-            "###########################################################################\n"
-        )
-
-    print("\nXavier:")
-    print(
-        f"\tAccurracy: std = {np.std(xavier_acc):.8f}; mean = {np.mean(xavier_acc):.8f}; median = {np.median(xavier_acc):.8f}"
-    )
-    print(
-        f"\tMean Difference: std = {np.std(xavier_diff):.8f}; mean = {np.mean(xavier_diff):.8f}; median = {np.median(xavier_diff):.8f}"
-    )
-
-    print("\n\nHe:")
-    print(
-        f"\tAccurracy: std = {np.std(he_acc):.8f}; mean = {np.mean(he_acc):.8f}; median = {np.median(he_acc):.8f}"
-    )
-    print(
-        f"\tMean Difference: std = {np.std(he_diff):.8f}; mean = {np.mean(he_diff):.8f}; median = {np.median(he_diff):.8f}"
-    )
-
-    print("\n\nRandom Normal:")
-    print(
-        f"\tAccurracy: std = {np.std(rand_norm_acc):.8f}; mean = {np.mean(rand_norm_acc):.8f}; median = {np.median(rand_norm_acc):.8f}"
-    )
-    print(
-        f"\tMean Difference: std = {np.std(rand_norm_diff):.8f}; mean = {np.mean(rand_norm_diff):.8f}; median = {np.median(rand_norm_diff):.8f}"
-    )
-
-    print("\n\nAlternating positive negative:")
-    print(
-        f"\tAccurracy: std = {np.std(pos_neg_acc):.8f}; mean = {np.mean(pos_neg_acc):.8f}; median = {np.median(pos_neg_acc):.8f}"
-    )
-    print(
-        f"\tMean Difference: std = {np.std(pos_neg_diff):.8f}; mean = {np.mean(pos_neg_diff):.8f}; median = {np.median(pos_neg_diff):.8f}"
-    )
+    for output in outputs:
+        print(output)
 
 
 if __name__ == "__main__":
