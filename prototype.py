@@ -84,35 +84,14 @@ def initialize_weights_random_normal(model):
             layer.set_weights([new_weights, new_biases])
 
 
-# Hab ich bissi herumgespielt seit den tests..müsste vlt nochmal kontrolliert und angepasst werden..
 def initialize_weights_alternating(model):
-    positive_initializer = tf.keras.initializers.RandomUniform(
-        minval=0.0, maxval=1.0, seed=None
-    )
-    negative_initializer = tf.keras.initializers.RandomUniform(
-        minval=-1.0, maxval=0.0, seed=None
-    )
-
-    for i, layer in enumerate(model.layers):
-        if isinstance(layer, tf.keras.layers.Conv2D) or isinstance(
-            layer, tf.keras.layers.Dense
-        ):
-            if i % 2 == 0:
-                new_weights = positive_initializer(layer.get_weights()[0].shape)
-            else:
-                new_weights = negative_initializer(layer.get_weights()[0].shape)
-            bias_initializer = tf.keras.initializers.RandomUniform(
-                minval=-0.01, maxval=0.01
-            )
+    for layer in model.layers:
+        if isinstance(layer, Conv2D) or isinstance(layer, Dense):
+            initializer = tf.keras.initializers.RandomUniform(minval=-0.5, maxval=0.5)
+            new_weights = initializer(layer.get_weights()[0].shape)
+            bias_initializer = tf.keras.initializers.RandomUniform(minval=-0.01, maxval=0.01)
             new_biases = bias_initializer(layer.get_weights()[1].shape)
             layer.set_weights([new_weights, new_biases])
-
-            # Debug prints...kann ma ignorieren
-            # print(f"Layer {i} weights initialized with {'positive' if i % 2 == 0 else 'negative'} values:")
-            # print("new biases:")
-            # print(new_biases)
-            # print("new weights:")
-            # print(new_weights)
 
 
 ######################### Auswertung ##################################
