@@ -124,6 +124,10 @@ def evaluate_initialization(model, images, labels, initialization_fn):
     _ = model.predict(images[:1])
     outputs = model.predict(images)
 
+    print(outputs)
+    print(len(outputs))
+    print(len(outputs[0]))
+
     predicted_labels = np.argmax(outputs, axis=1)
     correct_predictions = np.sum(predicted_labels == labels)
     total_predictions = labels.shape[0]

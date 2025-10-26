@@ -1,0 +1,98 @@
+﻿With 'tanh' activation function:
+	Xavier:
+		Accurracy: std = 3.01641401; mean = 10.28736667; median = 10.11083333
+		Mean Difference: std = 0.00040658; mean = 0.00069995; median = 0.00068453
+		Outputs: std = 0.00718570; variance = 5.163433888810687e-05; mean = 0.10000301; median = 0.09987286
+
+
+	He:
+		Accurracy: std = 2.19691859; mean = 10.04136667; median = 10.34500000
+		Mean Difference: std = 0.00424552; mean = 0.00558949; median = 0.00470866
+		Outputs: std = 0.06926932; variance = 0.004798238631337881; mean = 0.10000010; median = 0.08284824
+
+
+	Random Normal:
+		Accurracy: std = 3.00855076; mean = 9.85596667; median = 9.37166667
+		Mean Difference: std = 0.00000232; mean = 0.00000350; median = 0.00000303
+		Outputs: std = 0.00003951; variance = 1.561034745911627e-09; mean = 0.10000359; median = 0.10000060
+
+
+	Alternating positive negative:
+		Accurracy: std = 1.93245186; mean = 9.93873333; median = 9.64916667
+		Mean Difference: std = 0.00557312; mean = 0.00735984; median = 0.00513080
+		Outputs: std = 0.10524434; variance = 0.011076371185481548; mean = 0.09999982; median = 0.06359610
+
+
+With 'relu' activation function:
+	Xavier:
+		Accurracy: std = 2.94024486; mean = 9.88193333; median = 10.02333333
+		Mean Difference: std = 0.00008684; mean = 0.00011442; median = 0.00009078
+		Outputs: std = 0.00248598; variance = 6.1800878938811366e-06; mean = 0.10000363; median = 0.10000060
+
+
+	He:
+		Accurracy: std = 2.34234887; mean = 10.52576667; median = 10.13583333
+		Mean Difference: std = 0.00438572; mean = 0.00550305; median = 0.00550418
+		Outputs: std = 0.09217171; variance = 0.008495623245835304; mean = 0.10000009; median = 0.07988205
+
+
+	Random Normal:
+		Accurracy: std = 2.43396285; mean = 10.49316667; median = 10.02416667
+		Mean Difference: std = 0.00000038; mean = 0.00000057; median = 0.00000055
+		Outputs: std = 0.00001094; variance = 1.1973352864735887e-10; mean = 0.10000359; median = 0.09999997
+
+
+	Alternating positive negative:
+		Accurracy: std = 3.20117836; mean = 9.99573333; median = 9.85583333
+		Mean Difference: std = 0.02454441; mean = 0.02515120; median = 0.01510209
+		Outputs: std = 0.28912732; variance = 0.08359460532665253; mean = 0.09999997; median = 0.00000000
+
+
+With 'sigmoid' activation function:
+	Xavier:
+		Accurracy: std = 0.41902665; mean = 9.94856667; median = 9.91500000
+		Mean Difference: std = 0.00062338; mean = 0.00094865; median = 0.00079004
+		Outputs: std = 0.06151734; variance = 0.003784383414313197; mean = 0.10000025; median = 0.08541575
+
+
+	He:
+		Accurracy: std = 0.56028085; mean = 10.01696667; median = 9.91500000
+		Mean Difference: std = 0.00094824; mean = 0.00138004; median = 0.00127101
+		Outputs: std = 0.07220599; variance = 0.005213704891502857; mean = 0.09999994; median = 0.07923002
+
+
+	Random Normal:
+		Accurracy: std = 0.39144587; mean = 9.93543333; median = 9.87166667
+		Mean Difference: std = 0.00016003; mean = 0.00019665; median = 0.00015363
+		Outputs: std = 0.01378888; variance = 0.0001901332288980484; mean = 0.10000250; median = 0.09927820
+
+
+	Alternating positive negative:
+		Accurracy: std = 0.63540768; mean = 9.92580000; median = 9.86333333
+		Mean Difference: std = 0.00107375; mean = 0.00122582; median = 0.00089072
+		Outputs: std = 0.08158040; variance = 0.006655361503362656; mean = 0.09999979; median = 0.08012904
+
+
+With 'swish' activation function:
+	Xavier:
+		Accurracy: std = 3.62635081; mean = 9.92560000; median = 9.51250000
+		Mean Difference: std = 0.00001980; mean = 0.00002691; median = 0.00002051
+		Outputs: std = 0.00030751; variance = 9.456539373786654e-08; mean = 0.10000359; median = 0.10000936
+
+
+	He:
+		Accurracy: std = 2.83441612; mean = 9.73043333; median = 9.38916667
+		Mean Difference: std = 0.00267651; mean = 0.00281386; median = 0.00236075
+		Outputs: std = 0.03056134; variance = 0.0009339955286122859; mean = 0.10000166; median = 0.09829444
+
+
+	Random Normal:
+		Accurracy: std = 2.84565088; mean = 9.97026667; median = 9.94416667
+		Mean Difference: std = 0.00000008; mean = 0.00000010; median = 0.00000008
+		Outputs: std = 0.00000383; variance = 1.4662182926117318e-11; mean = 0.10000359; median = 0.09999999
+
+
+	Alternating positive negative:
+		Accurracy: std = 2.29556398; mean = 9.82523333; median = 9.85916667
+		Mean Difference: std = 0.01784815; mean = 0.01804232; median = 0.01237261
+		Outputs: std = 0.28456423; variance = 0.08097679167985916; mean = 0.09999999; median = 0.00000000
